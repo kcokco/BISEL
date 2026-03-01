@@ -105,4 +105,17 @@ Ez a dokumentum a BISEL projekt (Python + FastAPI + PostgreSQL webes alkalmazás
 
 ---
 
+## 10. Lépés: Globális UI Elemek és a Regisztrációs Űrlap (Frontend)
+* **Cél:** A felhasználói felület (UI) vizuális keretének beállítása egy Globális Fejléccel (Navbar), valamint a biztonságos Regisztrációs Űrlap frontend implementálása API kapcsolattal.
+* **Technológia:** React, React Router, Axios, CSS3.
+* **Mit csináltunk?**
+    1. **Felhasználói Élmény (UX) Javítása:** Létrehoztunk a `components` mappában egy Globális Fejlécet (`Navbar.jsx` és `Navbar.css`), amely "ragadós" a képernyő tetején, bemutatja a BISEL logót, és helyet ad a jövőbeli navigációs gomboknak.
+    2. **Regisztrációs Oldal (Register.jsx):** Felépítettünk egy modern űrlapot a `pages` mappában, mely stílusos beviteli mezőket (glória fókusz effekt), hiba/siker visszajelző paneleket (alert) kapott.
+    3. **Jelszó Láthatóság Váltó:** A kódolás magában foglalja a React Állapotkezelését (`useState`), amivel létrehoztunk egy dinamikus "Szem"/"Mutat" gombot a jelszó mezőkhöz UX javításként.
+    4. **Frontend Validáció:** Az űrlap beküldése (Submit) csak akkor indul el, ha a "Jelszó" és a "Jelszó Megerősítése" mezők karakterei 100%-ban egyeznek.
+    5. **API Hálózat (Full-Stack Integráció):** A "Regisztrálok" gomb lenyomására a frontend kliensünk az Axios könyvtárral elküldi (JSON formátumban) az adatokat a `FastAPI` felé (`POST /users/`). Sikeres válasz esetén zöld üzenetet mutat és automatikusan (2 mp múlva) átirányítja a felhasználót a főoldalra a React Router segítségével.
+    6. **Ismert technikai adósság:** A háttérrendszerben (`crud.py`) a jelszó titkosítása még csak "imitált" (`notreallyhashed`), melynek a következő mérföldkövek egyikében kell megtörténnie (valós **bcrypt** algoritmusra való cserével).
+
+---
+
 *(További lépések hamarosan...)*

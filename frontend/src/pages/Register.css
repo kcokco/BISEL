@@ -1,0 +1,130 @@
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px);
+    /* 100vh mínusz a navbar magassága */
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--color-border);
+}
+
+.auth-card h2 {
+    font-size: 1.8rem;
+    color: var(--color-primary);
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.auth-subtitle {
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--color-text-main);
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    padding: 12px 15px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    /* Fókusz kék glória */
+}
+
+.auth-submit {
+    margin-top: 10px;
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+}
+
+.auth-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Értesítések (Hibák / Sikerek) */
+.alert {
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    color: #10b981;
+    border: 1px solid #bbf7d0;
+}
+
+/* --- Új stílusok a Jelszó megjelenítéshez --- */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding-right: 70px;
+    /* Hely a gombnak, hogy a szöveg ne lógjon bele */
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.password-toggle-btn:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
