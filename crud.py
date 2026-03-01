@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
-import models, schemas
+import models
+import schemas
+import security
 
 # -----------------------------------------------------------------------------
 # USER CRUD (Felhasználók kezelése)
@@ -22,12 +24,13 @@ def create_user(db: Session, user: schemas.UserCreate):
     """
     Új felhasználót hoz létre az adatbázisban a kapott adatok (Pydantic schema) alapján.
     Figyelem: Jelenleg a jelszó "ál-hashelt", élesben bcrypt könyvtárra lesz szükség!
+    
     """
-    # Ideiglenes jelszó titkosítás imitáció (később bcrypt-re cserélendő)
-    fake_hashed_password = user.password + "notreallyhashed"
+    # Jelszó titkosítása valódi biztonsági algoritmussal (Bcrypt)
+    hashed_password = security.get_password_hash(user.password)
     
     # 1. Példányosítjuk az SQLAlchemy User modellt
-    db_user = models.User(email=user.email, name=user.name, hashed_password=fake_hashed_password)
+    db_user = models.User(email=user.email, name=user.name, hashed_password=hashed_password)
     
     # 2. Hozzáadjuk a session-höz (a "bevásárlókosárhoz")
     db.add(db_user)
