@@ -90,4 +90,19 @@ Ez a dokumentum a BISEL projekt (Python + FastAPI + PostgreSQL webes alkalmazás
 
 ---
 
+## 9. Lépés: Frontend Architektúra és UI Építés
+* **Cél:** A generált Vite sablon megtisztítása, a modern dizájn rendszer (CSS) megalapozása, és a komponens-alapú szerkezet (React) felállítása az API kommunikációval együtt.
+* **Technológia:** React, Vite, `react-router-dom` (Útválasztás), `axios` (Hálózati kérések), CSS3.
+* **Mit csináltunk?**
+    1. **Biztonságos törlés:** Eltávolítottuk a Vite alapértelmezett logóit és CSS fájljait (`App.css`), így tiszta lappal indulunk.
+    2. **Könyvtárszerkezet kialakítása:** Létrehoztunk egy tiszta, átlátható struktúrát az `src` mappában:
+        * `/pages`: A teljes weboldalakat képviselő komponensek (pl. Kezdőlap).
+        * `/components`: Újrahasznosítható kisebb elemek (pl. Gombok, Űrlapok).
+        * `/api`: A Backenddel történő kommunikáció központja.
+    3. **Applikációs Szintű Dizájn:** Csináltunk egy profi, modern `index.css`-t Inter betűtípussal, arculati színváltozókkal (kékes-zöldes) és lebegési effektekkel.
+    4. **Backend Bekötése (Axios):** Az `api` mappában létrehoztunk egy `api.js` fájlt, ami egy előre beállított Axios klienst tartalmaz (ami a mi `127.0.0.1:8000`-es Python szerverünkre mutat).
+    5. **Első Oldal és React Router:** Telepítettük a `react-router-dom`-ot CLI-ből. Az `App.jsx`-et átalakítottuk, hogy ez kezelje az útvonalazást, és elkészítettük a `Home.jsx` oldalt, ami már sikeresen le is kérdezi és megjeleníti a backend `/` végpontjának üzenetét.
+
+---
+
 *(További lépések hamarosan...)*

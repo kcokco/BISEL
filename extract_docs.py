@@ -1,3 +1,10 @@
+"""
+SEGÉDPROGRAM A TUDÁSBÁZISHOZ
+Ez a szkript kizárólag a projekt specifikációit tartalmazó Word (.docx) és PDF
+fájlok beolvasására, valamint azok nyers nyelvi feldolgozására (szövegként való
+kimentésére) szolgált az induláskor. Nem része az éles webes alkalmazásnak.
+"""
+
 import sys
 import docx
 from pypdf import PdfReader
