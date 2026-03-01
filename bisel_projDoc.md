@@ -114,8 +114,24 @@ Ez a dokumentum a BISEL projekt (Python + FastAPI + PostgreSQL webes alkalmazás
     3. **Jelszó Láthatóság Váltó:** A kódolás magában foglalja a React Állapotkezelését (`useState`), amivel létrehoztunk egy dinamikus "Szem"/"Mutat" gombot a jelszó mezőkhöz UX javításként.
     4. **Frontend Validáció:** Az űrlap beküldése (Submit) csak akkor indul el, ha a "Jelszó" és a "Jelszó Megerősítése" mezők karakterei 100%-ban egyeznek.
     5. **API Hálózat (Full-Stack Integráció):** A "Regisztrálok" gomb lenyomására a frontend kliensünk az Axios könyvtárral elküldi (JSON formátumban) az adatokat a `FastAPI` felé (`POST /users/`). Sikeres válasz esetén zöld üzenetet mutat és automatikusan (2 mp múlva) átirányítja a felhasználót a főoldalra a React Router segítségével.
-    6. **Ismert technikai adósság:** A háttérrendszerben (`crud.py`) a jelszó titkosítása még csak "imitált" (`notreallyhashed`), melynek a következő mérföldkövek egyikében kell megtörténnie (valós **bcrypt** algoritmusra való cserével).
 
 ---
+
+## 11. Lépés: Backend Biztonság - Valós Jelszó Titkosítás (Bcrypt)
+* **Cél:** A regisztrációs űrlaphoz kapcsolódó jelszavak iparági szabványnak (Bcrypt) megfelelő, egyirányú titkosítása az adatbázisban, lecserélve a korábbi, ideiglenes megoldást.
+* **Technológia:** Python `passlib`, `bcrypt`, FastAPI szerver futtatás (`uvicorn`).
+* **Mit csináltunk?**
+    1. **Felkészülés:** Telepítettük a virtuális környezetbe a szükséges csomagokat (`pip install passlib[bcrypt]`).
+    2. **Biztonsági Modul:** Létrehoztunk a projekt gyökerében egy `security.py` fájlt, amely példányosította a `CryptContext`-et, és két alapvető függvényt biztosít: `get_password_hash` (a jelszó "megsózása" és hashelése) és `verify_password` (a későbbi belépések ellenőrzéséhez).
+    3. **CRUD integráció:** A `crud.py`-ban lecseréltük az elavult (notreallyhashed) megoldást. A `create_user` mostantól a `security.py` logikáját (Bcrypt algoritmus) használja mielőtt az SQLAlchemy fiókként lementi az objektumot.
+    
+### ⚠️ Műszaki Tanulság (Hibaelhárítás)
+A fejlesztés közben felmerült egy kritikus akadályozó tényező (blocker), ami a jövőbeni projekteknél is fontos tapasztalat:
+* **Jelenség:** A kódbázis sikeres átírása ellenére az új felhasználók jelszava továbbra is titkosítatlanul (`notreallyhashed`) vándorolt be a PostgreSQL adatbázisba.
+* **A Probléma Gyökere:** Az első próbálkozásnál a `bcrypt` legújabb, 5.0.0-s verziója települt fel, ami részben inkompatibilis (hibát dob a túl hosszú `truncate` miatt) a FastAPI `passlib` moduljával. Amikor az Uvicorn szerver (mivel futott a háttérben `--reload` kapcsolóval) érzékelte a fájl változásokat, megpróbálta újraolvasni az alkalmazást. A beolvasás közben a `bcrypt 5.0.0` verzióhiba miatt összeomlott. Az Uvicorn "túlélési" (fail-safe) mechanizmusa, hogy az összeomlás után egyszerűen **a memóriájában (RAM) tartja az utolsó, még működő kódot** (amikor még nem volt `security.py`).
+* **Továbgyűrűző Hiba:** Amikor a csomagot sikeresen "leminősítettük" a stabil `bcrypt 4.0.1`-re, majd újabb tesztet futtattunk a böngészőből, a szerver még mindig az elavult, memóriába égett állapotot szolgálta ki, mivel azóta egyetlen forrásfájlhoz sem nyúltunk, így "nem tudta", hogy újra kellene töltenie a hibátlan kódot.
+* **A Megoldás (Fix):** Két opció is létezik egy ilyen "beragadt" állapot feloldására:
+    1. A szerver kényszerített újraindítása a megállító kulcskombinációval (CTRL + C) a terminálban, majd az indítási parancs megismétlése.
+    2. Vagy radikálisabb esetben (amit itt használtunk), PowerShell parancsokkal maradéktalanul kipucolni a futó python folyamatokat (`Get-Process -Name "python"`, majd kiírtani a hozzá tartozó PID-ket: `Stop-Process -Id <PID> -Force`). Ezután egy nulláról indított `uvicorn main:app --reload` biztosítja, hogy tiszta lappal, a javított fájlok alapján haladjunk tovább.
 
 *(További lépések hamarosan...)*
