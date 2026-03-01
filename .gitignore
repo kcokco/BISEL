@@ -1,0 +1,17 @@
+# Környezet és telepítések
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Tesztelés
+.pytest_cache/
+tests/report.html
+
+# IDE beállítások
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini

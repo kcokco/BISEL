@@ -1,0 +1,116 @@
+﻿--- DOCX ---
+File: C:\Users\kozakc\KCO\Antigravity_projects\BISEL\Specifications\BRD_Bisel.docx
+▄zleti K÷vetelmÚny Dokumentum (BRD) ľ Bisel
+1. BevezetÚs Ús cÚl
+Egy biztonsßgos, webes alkalmazßs, amely lehet§vÚ teszi a felhasznßlˇknak (kliens szerepk÷r) a BISEL terepi jegyz§k÷nyv online kit÷ltÚsÚt, korßbbi jegyz§k÷nyveik kezelÚsÚt (mˇdosÝtßs, t÷rlÚs), mÚrÚsek r÷gzÝtÚsÚt, vÝzfolyßsokra valˇ keresÚst Ús korßbbi mÚrÚsek lekÚrdezÚsÚt; az admin pedig felŘgyeli az adatok min§sÚgÚt, elvÚgezheti a szŘksÚges korrekciˇkat, Ús hozzßfÚr a naplˇzßshoz.
+2. Hatˇk÷r (Scope)
+A rendszer webes felŘlettel rendelkezik. REST API-t hasznßl Ús opcionßlisan indexelÚs t÷rtÚnhet.
+A megrendelÚsnek nem rÚsze mobil app kialakÝtßs Ús egyÚb kŘls§ labor adatok automatikus integrßciˇja.
+3. ╔rintett szerepl§k Ús felel§ssÚgek
+VendÚg
+Ismertet§ oldalt, nyilvßnos informßciˇkat tud elÚrni
+Kliens (bejelentkezett felhasznßlˇ)
+┌j mÚrÚs r÷gzÝtÚse a BISEL formßnak megfelel§ mez§kkel.
+Sajßt jegyz§k÷nyvek listßzßsa, megtekintÚse, mˇdosÝtßsa, t÷rlÚse. 
+KeresÚs/szűrÚs vÝzfolyßs, dßtum, BISEL index szerint. 
+Export (PDF/CSV) a jegyz§k÷nyvekr§l.
+Admin
+Minden jegyz§k÷nyv megtekintÚse. 
+Jegyz§k÷nyvek mˇdosÝtßsa, t÷rlÚse (indoklßs megadßsa k÷telez§). 
+Felhasznßlˇ-kezelÚs (lÚtrehozßs, jogosultsßgok kiosztßsa/tiltßsa). 
+Teljes log naplˇ b÷ngÚszÚse/szűrÚse/exportja. 
+T÷rzsadatok (Taxon-, vÝzfolyßs Ús kÚmiai komponensek) karbantartßsa.
+4. Funkcionßlis k÷vetelmÚnyek
+5. Nem-funkcionßlis k÷vetelmÚnyek
+Biztonsßg: HTTPS, OWASP biztonsßgi irßnyelvek
+Adatbiztonsßg: GDPR elveit figyelembe vÚve kell eljßrni az adatokkal, azoknak tßrolßsi idejÚvel.
+RendelkezÚsre ßllßs: PA tÝpus˙, id§szakos tervezett leßllßsokkal
+TeljesÝtmÚny: keresÚs műveletek 3s alatt vßlaszoljanak, megfelel§ indexßlßs kialakÝtßsa
+6. Jogszabßlyi Ús szabßlyozˇi megfelelÚs
+GDPR megfelelÚs
+7. Naplˇzßs Ús megfelel§ssÚg
+MˇdosÝtßsok naplˇzßsa: k÷telez§ mez§szintű audit; exportßlhatˇ CSV-be.
+Jogk÷vetÚs: GDPR elvek; szemÚlyes adatok (pl. vizsgßlatot vÚgz§ neve, elÚrhet§sÚge) ľ cÚlhoz k÷t÷tten kezelve, adatkezel§i tßjÚkoztatˇval.
+Adatmeg§rzÚs: pl. 5 Úv aktÝv + 2 Úv archÝv; archÝvumhoz csak admin fÚr hozzß (jˇvßhagyßssal). 
+Funkcionßlis Specifikßciˇ
+Adatbßzismodell
+API hÝvßsok
+BejelentkezÚs
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+Jegyz§k÷nyvek
+listßzßs, szűrÚs, lapozßs
+GET /api/v1/reports?watercourse=
+rÚszletek megtekintÚse (kliens mßsokÚt is olvashatja)
+GET /api/v1/reports/{id} 
+lÚtrehozßs (kliens, admin)
+POST /api/v1/reports
+mˇdosÝtßs (kliens: sajßt; admin: bßrki + reason k÷telez§).
+PUT /api/v1/reports/{id}
+t÷rlÚs (kliens: sajßt; admin: bßrki + reason k÷telez§)
+DELETE /api/v1/reports/{id}
+export
+GET /api/v1/reports/{id}/export?format=pdf|csv
+Log
+GET /api/v1/log?userId=
+Felhasznßlˇk kezelÚse
+LÚtrehozßs
+POST /api/v1/users (lÚtrehozßs)
+MˇdosÝtßsa
+PATCH /api/v1/users/{id}/
+T÷rzsadatok kezelÚse
+GET/POST/PUT/DELETE /api/v1/taxa ; /watercourses ; /chem-components
+GET/POST/PUT/DELETE /api/v1/ watercourses
+Minta hÝvßsok
+POST /api/v1/reports
+{
+  "watercourseId": "BI-DUNA-13",
+  "samplingSiteId": "SITE-BP-001",
+  "date": "2026-02-01",
+  "qualityClass": "III",
+  "biselIndex": 60,
+  "environmental": {
+    "weather": {
+      "condition": "borult",
+      "airTemperatureC": 2.5,
+      "precipitation": "enyhe hˇesÚs",
+      "wind": { "direction": "╔", "speedMps": 3.2 }
+    },
+    "siteConditions": {
+      "coordinates": { "lat": 47.4979, "lon": 19.0402 },
+      "waterLevel": "alacsony",
+      "flowRate": "k÷zepes",
+      "substrate": ["homok", "kavics"],
+      "riparianVegetation": "helyenkÚnt sűrű, tÚli lombtalan ßllapot",
+      "visibility": "zavaros",
+      "accessNotes": "cs˙szˇs part, ˇvatossßg szŘksÚges"
+    },
+    "observers": [
+      { "name": "Kiss Jˇzsef", "role": "mintavev§" },
+      { "name": "Nagy Anna", "role": "jegyz§k÷nyvvezet§" }
+    ]
+  },
+  "measurements": [
+    /* ---------- FIZIKAI (a rendszerben 'CHEMICAL' tÝpus˙ komponenskÚnt kezelve) ---------- */
+    { "type": "CHEMICAL", "refId": "CH-WATER-TEMP", "value": 3.4, "unit": "░C" },
+    { "type": "CHEMICAL", "refId": "CH-TURBIDITY",  "value": 18.0, "unit": "NTU" },
+    { "type": "CHEMICAL", "refId": "CH-COLOR",      "value": "barna", "unit": "qual" },
+    { "type": "CHEMICAL", "refId": "CH-ODOR",       "value": "iszapos", "unit": "qual" },
+    /* ---------- K╔MIAI ---------- */
+    { "type": "CHEMICAL", "refId": "CH-PH",   "value": 7.6 },
+    { "type": "CHEMICAL", "refId": "CH-DO",   "value": 9.1,  "unit": "mg/L" },
+    { "type": "CHEMICAL", "refId": "CH-EC",   "value": 420,  "unit": "ÁS/cm" },
+    { "type": "CHEMICAL", "refId": "CH-NO3",  "value": 3.6,  "unit": "mg/L" },
+    { "type": "CHEMICAL", "refId": "CH-PO4",  "value": 0.03, "unit": "mg/L" },
+    { "type": "CHEMICAL", "refId": "CH-NH4",  "value": 0.12, "unit": "mg/L" },
+    /* ---------- BIOLËGIAI (taxonok) ---------- */
+    { "type": "TAXON", "refId": "TX-EPHEM-010", "value": 5 },   // kÚrÚszek (Ephemeroptera)
+    { "type": "TAXON", "refId": "TX-TRICH-007", "value": 3 },   // ßlkÚrÚszek (Trichoptera)
+    { "type": "TAXON", "refId": "TX-PLECO-004", "value": 2 },   // kÚrÚsz-rokonok (Plecoptera)
+    { "type": "TAXON", "refId": "TX-ANISO-001", "value": 12 },  // szitak÷t§k (Anisoptera)
+    { "type": "TAXON", "refId": "TX-OLIGO-021", "value": 20 },  // gyűrűsfÚrgek (Oligochaeta)
+    { "type": "TAXON", "refId": "TX-CHIRON-018", "value": 34 }  // ßrvasz˙nyog lßrvßk (Chironomidae)
+  ],
+  "notes": "TÚli mÚrÚs, jÚgzajlßs. MintavÚteli id§ 10:05ľ10:40, vÝzmÚlysÚg ~1.2 m. EltÚr§ vÝzszint a szokßsoshoz kÚpest."
+}
+------------
