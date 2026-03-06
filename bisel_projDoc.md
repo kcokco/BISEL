@@ -135,3 +135,79 @@ A fejlesztés közben felmerült egy kritikus akadályozó tényező (blocker), 
     2. Vagy radikálisabb esetben (amit itt használtunk), PowerShell parancsokkal maradéktalanul kipucolni a futó python folyamatokat (`Get-Process -Name "python"`, majd kiírtani a hozzá tartozó PID-ket: `Stop-Process -Id <PID> -Force`). Ezután egy nulláról indított `uvicorn main:app --reload` biztosítja, hogy tiszta lappal, a javított fájlok alapján haladjunk tovább.
 
 *(További lépések hamarosan...)*
+
+---
+
+## 12. Lépés: JWT Alapú Hitelesítés (Backend)
+* **Cél:** Egy biztonságos állapotmentes authentikációs rendszer bevezetése, ami JWT (JSON Web Token) tokeneket ad vissza a sikeresen bejelentkező felhasználóknak.
+* **Technológia:** FastAPI OAuth2PasswordBearer, `python-jose`, `python-multipart`.
+* **Mit csináltunk?**
+    1. A `security.py`-ba beírtuk a token generáló logikát (JWT encode) a biztonsági kulccsal és lejárati idővel (30 perc).
+    2. A `schemas.py`-ba felvettük a `Token` és `TokenData` válasz modelleket.
+    3. A `routers/users.py`-ban elkészítettük a `POST /users/login` végpontot. Ez visszadobja a tokent, ha jó a jelszó.
+    4. Készítettünk egy `get_current_user` nevű FastAPI dependency-t, mely automatikusan dekódolja a tokeneket majd kikeresi az adatbázisból az azonosított usert a védett végpontok meghívásakor. A tesztelés miatt frissíteni kellett a "passlib" kódját egy `UnknownHashError` hibát kezelő blokkal, hogy "notreallyhashed" régi felhasználók miatt ne essen pánikba. 
+
+---
+
+## 13. Lépés: Frontend Védett Állapotkezelés és Globális Context
+* **Cél:** A böngésző és a React app képes legyen megjegyezni, hogy ki van belépve (Munkamenet - Session / Context) és ez alapján dinamikusan változtatni az UI-t.
+* **Technológia:** React `createContext`, `useContext`, `useEffect`, React Router `Navigate`.
+* **Mit csináltunk?**
+    1. Építettünk egy robusztus bejelentkezési formot (`Login.jsx`), amely beállítja a `Local Storage`-be a tokent és frissíti a menüt.
+    2. Kialakítottunk egy `AuthContext.jsx`-et. Ez az alkalmazás indulásakor leellenőrzi a tokent, és kimenti a `user` objektumot globálisan.
+    3. Írtunk egy `ProtectedRoute.jsx` komponenst is: bárki megpróbál megnyitni a `App.jsx`-ben egy védett linket belépés nélkül, azt automatikusan visszadobja a`/login`-ra.
+    4. Az Axios (API) hívó beépített egy úgynevezett **Válasz Interceptort** a 401-es kódokra: ha lejár a tokenünk az api hívás alatt, magától kijelentkeztet és visszairányít a loginra. 
+
+---
+
+## 14. Lépés: Fő Funkciók Építése (Saját Mérések + Új Riport beküldése)
+* **Cél:** Hogy a belépett felhasználók privát, saját nevük alatt adhassanak le vízminőségi teszteket, és csak a sajátjaikat listázza ki később az alkalmazás.
+* **Technológia:** FastAPI beágyazott függőségek, React `useEffect` mapelések.
+* **Mit csináltunk?**
+    1. A `crud.py`-ban létrejött egy `get_reports_by_user` funkció, ami a `user_id` alapján szűri meg az adatbázist.
+    2. A `reports.py` (Backend) kibővült egy megvédett `GET /reports/me` felülettel.
+    3. A React Frontenden létrejött a `Dashboard.jsx`, ami rácsos elrendezéssel (Grid) szépen, listázza az onnan visszajövő JSON tömböt.
+    4. Kialakításra került a `NewReport.jsx`: Egy modern, sok input mezős űrlap, amely a beküldésnél a korábban elkészített (és most JWT-vel felvértezett) POST `/reports/` backend API-t használja. Siker esetén egyből visszadob a már feltöltött saját Kezelőpultra (`Dashboard`).
+
+*(Ezzel a teljes authentikációs kör és alap CRUD web funkció megvalósult!)*
+
+---
+
+## 15. Lépés: JWT és Védett Végpontok Automatikus Tesztelése
+* **Cél:** Bizonyítani, hogy a nemrég elkészült hitelesítési és jogosultságkezelő kódok hibamentesen és megbízhatóan működnek a FastAPI backend-en.
+* **Technológia:** Pytest, FastAPI `TestClient`, `pytest-html`.
+* **Mit csináltunk?**
+    1. Kibővítettük a `test_main.py` fájlt egy komplex, folyamatra épülő teszttel (`test_login_and_get_reports`).
+    2. A teszt futása során automatikusan:
+        - Regisztrál egy véletlenszerű nevű felhasználót az adatbázisba.
+        - Meghívja a `/users/login` végpontot az adatokkal, és ellenőrzi, hogy sikeresen visszakapja-e a `Bearer` formátumú JWT tokent.
+        - Elküld egy szimulált új mérést (`POST /reports/`) - ehhez beállítja az `Authorization: Bearer <token>` HTTP fejlécet, bizonyítva a hitelesítést.
+        - Végül lekéri a `/reports/me` címet a saját fiókba rögzített adatok ellenőrzéséhez. 
+
+### ⚠️ Tesztelés során felmerült hibák és megoldásaik
+
+- **`UnknownHashError` (passlib)**: Amikor a hitelesítés elindult, a régebbről (még a Bcrypt bevezetése előttről) bent maradt, `notreallyhashed` jelszavakkal rendelkező tesztfelhasználók bejelentkezése a szerver összeomlását okozta a `passlib` hibája miatt. 
+  *A megoldás az volt, hogy a `security.py`-ban egy `try... except UnknownHashError` blokkal elegánsan megfogtuk és kicseréltük a hibát a szokásos 401-es "Jogosulatlan" HTTP státuszra a szerver fagyása vagy "500 Internal Server error" helyett.*
+- **`NameError: name 'fetched_user' is not defined`**: A regisztráció utáni visszaolvasást (GET) végző, frissített `test_create_and_read_user` tesztesetben egyszerű elírás (szintaktikai hiba) miatt nem találta a JSOn válaszból kilvasott változót a Python. 
+  *Egy gyors változó-visszaállítási korrekcióval a teszt újra hibátlan, 100%-os "zöld" eredményt produkált.*
+
+---
+
+## 16. Lépés: Frontend Hibakeresés - A Láthatatlan Bejelentkezési Hiba
+* **Cél:** Egy a felhasználó által jelentett, a `Dashboard` komponens adatbetöltési hibájának reprodukálása, behatárolása és megszüntetése az éles rendszerhez közeli állapotban.
+* **Jelenség:** A bejelentkezés után a Kezelőpult (Dashboard) nem jelenítette meg a már meglévő méréseket, csupán egy üres listát mutatott ("Jelenleg nincsenek leadott méréseid"), annak ellenére, hogy a felhasználónak voltak rögzített adatai a rendszerben (pl. ID: 12-es user).
+* **Technológia:** Böngésző konzol (Developer Tools), Python natív HTTP tesztelés (`httpx`), SQLAlchemy (Command Line Interface).
+* **Mit csináltunk (A Debugolási Folyamat):**
+    1.  **Backend vs. Frontend elszigetelése:** Először meg kellett bizonyosodni, hogy az API (Python/Uvicorn) adja-e a hibás választ, vagy a Frontend (React/Axios) rontja-e el a kiolvasást.
+        *   Írtunk egy gyors natív Python teszt szkriptet, ami közvetlenül ("Böngésző nélkül") kérte le a Backendtől a problémás `/reports/me` végpont adatait JWT token kíséretében.
+        *   *Eredmény:* A Python teszt hibátlan `200 OK` státusszal és tökéletes JSON válasszal tért vissza. Ezzel **biztosra vettük, hogy a Backend modellek és a Pydantic validációk hibátlanul működnek.**
+    2.  **Frontend Szimuláció (Browser Subagent):** Egy automatizált böngészővel (Subagent) navigáltunk végig a folyamaton (Regisztráció -> Belépés -> Dashboard olvasás).
+        *   *A valós hiba lokalizálása:* A weblap vizuálisan tényleg nem mutatott piros hibaüzenetet, de a **böngésző fejlesztői hálózat naplójában (Console Log) egyértelműen látható volt egy `401 Unauthorized` API visszautasítás**, hivatkozva a lejárt vagy érvénytelen tokenre.
+    3.  **A Gyökér-ok (Root Cause) felfedezése:** 
+        *   A hitelesítési hiba nem kódszintű, hanem **adatintegritási** probléma volt.
+        *   Amikor korábban a bevezettük az iparági szabványú jelszó titkosítást (Bcrypt - 11. Lépés), az **adatbázisban bent maradtak a régi, titkosítatlan (`notreallyhashed`) fiókok**. 
+        *   Amikor a Frontend megpróbált bejelentkezni egy ilyen "legacy" (régi) felhasználóval, a megújult biztonsági rendszer jogosan megtagadta a hozzáférést (401), ezért nem kapott jogosultságot az Axios a mérések letöltésére, amit a UI egy némán üres listaként interpretált.
+    4.  **A Megoldás (Fix):**
+        *   Mivel egy fejlesztés alatt álló (Dev) környezetben vagyunk, a legtisztább megoldás a **"Tiszta lap" (Clean Slate)** elve volt.
+        *   Egy SQLAlchemy parancssoros lekérdezéssel töröltük az adatbázisból az összes egyezményes táblát (Users, Reports, Measurements, EnvironmentalData), eltávolítva az elavult jelszavakat.
+    5.  **Végső Ellenőrzés (Verify):** A tiszta adatbázissal megismételt, teljes végponttól-végpontig tartó (End-to-End) manuális és automatizált teszt (Regisztráció -> Belépés -> Új mérés leadása) **100%-os sikert hozott.** Az új, Bcrypt-tel védett mérési adatok azonnal és hibamenetesen betöltődtek a Dashboard komponensbe.

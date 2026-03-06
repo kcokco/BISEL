@@ -54,6 +54,10 @@ def get_reports(db: Session, skip: int = 0, limit: int = 100):
     """
     return db.query(models.Report).offset(skip).limit(limit).all()
 
+def get_reports_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    """Lekérdezi az egy adott felhasználóhoz tartozó méréseket."""
+    return db.query(models.Report).filter(models.Report.user_id == user_id).offset(skip).limit(limit).all()
+
 def create_report(db: Session, report: schemas.ReportCreate):
     """Új fő riport rekord (pl. horgász vagy biológus mérése) létrehozása."""
     # A **report.model_dump() a pydantic validált adatokat adja át a modellnek "kicsomagolva"

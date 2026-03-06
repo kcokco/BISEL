@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from typing import Optional, List, Any, Dict
 from datetime import date
 
@@ -63,7 +63,12 @@ class ReportBase(BaseModel):
 
 class ReportCreate(ReportBase):
     """Új riport beküldésekor (POST) a klienstől várt JSON struktúra."""
-    pass
+    @field_validator('date')
+    @classmethod
+    def date_must_not_be_in_future(cls, v):
+        if v > date.today():
+            raise ValueError('A mérés dátuma nem lehet a jövőben.')
+        return v
 
 class Report(ReportBase):
     """A teljes riport válasz modellje, ami már tartalmazza a beágyazott mérési és környezeti adatokat is."""
@@ -89,3 +94,11 @@ class User(UserBase):
     role: str
 
     model_config = ConfigDict(from_attributes=True)
+
+# --- AUTH SCHEMAS ---
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None

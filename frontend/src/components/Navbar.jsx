@@ -1,7 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import './Navbar.css';
 
 function Navbar() {
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/'); // Kijelentkezés után a kezdőlapra
+    };
+
     return (
         <nav className="navbar">
             <div className="navbar-container">
@@ -12,12 +22,25 @@ function Navbar() {
 
                 {/* Jobb oldal: Menüpontok */}
                 <div className="navbar-menu">
-                    {/* Ide jönnek majd a tényleges funkció gombok, most csak demó/előkészület */}
                     <Link to="/" className="nav-item">Kezdőlap</Link>
-                    <div className="nav-actions">
-                        <Link to="/login" className="btn btn-outline">Belépés</Link>
-                        <Link to="/register" className="btn btn-primary">Regisztráció</Link>
-                    </div>
+                    {user ? (
+                        <>
+                            <Link to="/dashboard" className="nav-item">Kezelőpult</Link>
+                            <div className="nav-actions">
+                                <Link to="/new-report" className="btn btn-primary" style={{ marginRight: '1rem' }}>
+                                    + Új Mérés
+                                </Link>
+                                <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.5rem 1rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.9rem', backgroundColor: 'transparent' }}>
+                                    Kijelentkezés
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="nav-actions">
+                            <Link to="/login" className="btn btn-outline">Belépés</Link>
+                            <Link to="/register" className="btn btn-primary">Regisztráció</Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </nav>
